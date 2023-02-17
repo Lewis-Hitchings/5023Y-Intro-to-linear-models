@@ -69,6 +69,56 @@ darwin %>% # Produce a graph showing the differences in height between the Cross
 
 # Confidence Intervals ----
 
-confint(lsmodel1) # Outputs the 95% confidence intervals (or Tidyverse "broom::tidy(lsmodel1, conf.int=T)")
+confint(lsmodel1) # Outputs the 95% confidence intervals 
 
+# Or, for Tidyverse...
+
+broom::tidy(lsmodel1, conf.int=T) # As previous including the Estimate, Standard error, Standard error, and p value
+
+GGally::ggcoef_model(lsmodel1, # Plots the confidnece intervals for Self plants using Cross plants as the estimate.
+                     show_p_values=FALSE, 
+                     conf.level=0.95)
+
+# As the confidence interval line does not cross 0, we ca see there is a significant difference between the mean heights of each group.
+
+
+## Emmeans ----
+
+# The package emmeans contains a function "emmeans()" that also performs a similar thing to "broom::tidy..."
+
+means <- emmeans::emmeans(lsmodel1, specs = ~ type)
+
+means
+
+means %>% # Produces a graph showing the means for the two groups and the confidene intervals aroud them.
+  as_tibble() %>% 
+  ggplot(aes(x=type, 
+             y=emmean))+
+  geom_pointrange(aes(
+    ymin=lower.CL, 
+    ymax=upper.CL))
+
+# The overlapping confidence intervals overlap meaning we cannot use this graph to show a difference in mean height between the two groups.  
+
+
+#____________________________ ----
+
+# Assumption Checking ----
+
+# It is necesarry now that the linear model analyis has been conducted that we check that the assumptions we made are met. 
+
+performance::check_model(lsmodel1) # Produces lots of graphs to check the assupions.
+
+
+## Checking for... ----
+
+### Normal Distribution ----
+
+performance::check_model(lsmodel1, check=c("normality","qq")) # Produce a normality and a qq plot 
+
+# The dots do not fall along the line at each end 
+
+### Equality of Variance ----
+
+# Specifically, equality of residual/unexplained variance between the two groups.
 
