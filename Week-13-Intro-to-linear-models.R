@@ -2,7 +2,7 @@
 
 #____________________________ ----
 
-#Source Week 12 Script ----
+# Source Week 12 Script ----
 
 source("Week-12-Intro-to-statistics.R")
 
@@ -13,6 +13,7 @@ source("Week-12-Intro-to-statistics.R")
 library(GGally)
 library(emmeans)
 library(performance)
+library(broom.helpers)
 
 #____________________________ ----
 
@@ -75,7 +76,7 @@ confint(lsmodel1) # Outputs the 95% confidence intervals
 
 broom::tidy(lsmodel1, conf.int=T) # As previous including the Estimate, Standard error, Standard error, and p value
 
-GGally::ggcoef_model(lsmodel1, # Plots the confidnece intervals for Self plants using Cross plants as the estimate.
+GGally::ggcoef_model(lsmodel1, # Plots the confidence intervals for Self plants using Cross plants as the estimate.
                      show_p_values=FALSE, 
                      conf.level=0.95)
 
@@ -105,7 +106,7 @@ means %>% # Produces a graph showing the means for the two groups and the confid
 
 # Assumption Checking ----
 
-# It is necesarry now that the linear model analyis has been conducted that we check that the assumptions we made are met. 
+# It is necessary now that the linear model analyis has been conducted that we check that the assumptions we made are met. 
 
 performance::check_model(lsmodel1) # Produces lots of graphs to check the assupions.
 
@@ -116,9 +117,44 @@ performance::check_model(lsmodel1) # Produces lots of graphs to check the assupi
 
 performance::check_model(lsmodel1, check=c("normality","qq")) # Produce a normality and a qq plot 
 
+# or ...
+
+plot(lsmodel1, which=c(2,2)) # plots a very basic QQ plot 
+
 # The dots do not fall along the line at each end 
+
 
 ### Equality of Variance ----
 
 # Specifically, equality of residual/unexplained variance between the two groups.
+
+performance::check_model(lsmodel1, check="homogeneity") # Produces a plot of the standardized residuals (standardized residuals = residual error / standard deviation)
+
+plot(lsmodel1, which=c(1,3))
+
+
+### Outliers ----
+
+performance::check_model(lsmodel1, check="outliers") # Plots the direction and distance of outliers 
+
+plot(lsmodel1, which=c(4,4)) # Plots the distance (measured with Cooks Distnace) of outliers and their position within the data 
+
+# Cooks distance shows how much imapct a datapoint has on the model (leverage) making it a useful way of looking at how outliers imapct the dataset
+
+
+#____________________________ ----
+
+# Summary ----
+
+# So far the analysis has been done essentialy using a Student's t test rather than a Paired t-test. This ignores the experimental design having paired samples. 
+
+darwin %>% # plot a graph showing the heights of the two groups, a line for the mean, and a dotted line the difference between the two
+  ggplot(aes(x=type,
+             y=height))+
+  geom_jitter(width=0.1,
+              pch=21,
+              aes(fill=type))+
+  theme_classic()+
+  geom_segment(aes(x=1, xend=2, y=20.192, yend=20.192-1.617), linetype="dashed")+
+  stat_summary(fun.y=mean, geom="crossbar", width=0.2)
 
